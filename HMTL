@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sizuca - Steel Master OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
+        
+        /* --- ESTILOS DE LA INTRO (SPLASH SCREEN) --- */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: white; z-index: 10000;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 1s ease, visibility 1s;
+        }
+        .splash-fade { animation: splashAnimation 2.5s ease-in-out forwards; }
+        @keyframes splashAnimation {
+            0% { opacity: 0; transform: scale(0.5); }
+            40% { opacity: 1; transform: scale(0.7); }
+            70% { opacity: 1; transform: scale(0.7); }
+            100% { opacity: 0; transform: scale(0.8); }
+        }
+
+        /* --- ESTILOS DE LA APP --- */
+        .tab-content { display: none; animation: slideIn 0.3s ease-out; }
+        .tab-content.active { display: block; }
+        @keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .glass { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        .input-industrial { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 12px; color: white; width: 100%; font-size: 16px; transition: border 0.3s; }
+        .input-industrial:focus { border-color: #3b82f6; outline: none; }
+        .led-green { box-shadow: 0 0 10px #2ecc71; border: 2px solid #2ecc71; }
+        .btn-tab.active { color: #3b82f6; border-top: 3px solid #3b82f6; }
+    </style>
+</head>
+<body class="pb-24">
+
+    <div id="splash-screen">
+        <img src="https://i.postimg.cc/1R8fvhXN/logo-sizuca.png" class="w-64 h-auto splash-fade" alt="Sizuca Logo">
+    </div>
+
+    <div class="sticky top-0 z-50 glass p-4 mb-4 border-b border-blue-500/30">
+        <div class="flex justify-between items-center mb-3">
+            <div class="flex items-center gap-2">
+                <img src="https://i.postimg.cc/1R8fvhXN/logo-sizuca.png" class="h-8 w-auto">
+                <h1 class="text-blue-400 font-bold tracking-tighter text-xl">CALCULADORA DE ADICIONES <span class="text-white italic">app</span></h1>
+            </div>
+            <div id="status-led" class="w-4 h-4 rounded-full bg-green-500 led-green"></div>
+        </div>
+        <div class="flex gap-4">
+            <div class="flex-1 text-center">
+                <p class="text-[9px] text-gray-400 uppercase font-bold">C. Equivalente</p>
+                <p id="dash-ce" class="text-xl font-black">0.000</p>
+            </div>
+            <div class="flex-1 text-center border-x border-gray-700">
+                <p class="text-[9px] text-gray-400 uppercase font-bold">Costo Adiciones</p>
+                <p id="dash-cost" class="text-xl font-black text-yellow-500">$0</p>
+            </div>
+            <div class="flex-1 text-center">
+                <p class="text-[9px] text-gray-400 uppercase font-bold">Balance Térmico</p>
+                <p id="dash-temp" class="text-xl font-black text-orange-400">0°C</p>
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-md mx-auto">
+        <section id="tab-quimica" class="tab-content active px-4">
+            <div class="glass rounded-2xl p-4 mb-4">
+                <h2 class="text-xs font-bold text-blue-300 mb-3 uppercase tracking-widest"><i class="fas fa-cog mr-2"></i>Configuración</h2>
+                <div class="space-y-3">
+                    <select id="grado" class="input-industrial">
+                        <option value="S60 RA">S60 RA (0.44 - 0.48% C)</option>
+                        <option value="S60 RB">S60 RB (0.39 - 0.44% C)</option>
+                        <option value="W60 RA">W60 RA (0.27 - 0.29% C)</option>
+                        <option value="W60 RB">W60 RB (0.25 - 0.27% C)</option>
+                    </select>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="relative">
+                            <span class="absolute right-3 top-3 text-xs text-gray-500">t</span>
+                            <input type="number" id="peso" placeholder="Peso" value="50" class="input-industrial">
+                        </div>
+                        <div class="relative">
+                            <span class="absolute right-3 top-3 text-xs text-gray-500">min</span>
+                            <input type="number" id="arco" placeholder="Arco" value="15" class="input-industrial">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl p-4 mb-4">
+                <h2 class="text-xs font-bold text-blue-300 mb-3 uppercase tracking-widest"><i class="fas fa-vial mr-2"></i>Análisis de Acero (%)</h2>
+                <div class="grid grid-cols-3 gap-3">
+                    <input type="number" id="c_act" placeholder="C%" class="input-industrial" step="0.01">
+                    <input type="number" id="mn_act" placeholder="Mn%" class="input-industrial" step="0.01">
+                    <input type="number" id="si_act" placeholder="Si%" class="input-industrial" step="0.01">
+                    <input type="number" id="s_act" placeholder="S%" class="input-industrial" step="0.001">
+                    <input type="number" id="cr_act" placeholder="Cr%" class="input-industrial" step="0.01">
+                    <input type="number" id="ni_act" placeholder="Ni%" class="input-industrial" step="0.01">
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl p-4 mb-4 border-l-4 border-blue-500">
+                <h2 class="text-xs font-bold text-blue-300 mb-3 uppercase tracking-widest"><i class="fas fa-layer-group mr-2"></i>Escoria (FeO Ref.)</h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] text-gray-400 ml-1 font-bold">% FeO (Laboratorio)</label>
+                        <input type="number" id="feo_slag" class="input-industrial" value="1.5" step="0.1">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 ml-1 font-bold">% CaO (Balance)</label>
+                        <input type="number" id="cao_slag" class="input-industrial" value="55" step="1">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-carga" class="tab-content px-4">
+            <div id="lista-adiciones" class="space-y-3 mb-4">
+                <div class="glass p-8 text-center rounded-2xl text-gray-500">
+                    <i class="fas fa-calculator text-4xl mb-2 opacity-20"></i>
+                    <p>Calcula para ver adiciones</p>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl p-4 mb-4">
+                <h2 class="text-xs font-bold text-blue-300 mb-2 uppercase">Seguridad: Freeboard</h2>
+                <div class="w-full bg-slate-800 h-6 rounded-full overflow-hidden border border-white/10">
+                    <div id="bar-llenado" class="bg-gradient-to-r from-blue-600 to-blue-400 h-full w-0 transition-all duration-700"></div>
+                </div>
+                <div class="flex justify-between mt-2 text-[10px] font-bold">
+                    <span id="llenado-text">Espacio Libre: -- cm</span>
+                    <span id="alerta-llenado" class="text-red-400"></span>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-tiempos" class="tab-content px-4">
+            <div class="glass rounded-3xl p-10 text-center shadow-2xl">
+                <h3 class="text-blue-400 font-black text-sm mb-6 uppercase tracking-tighter">Homogeneización de Mezcla</h3>
+                <div id="timer" class="text-7xl font-black mb-8 text-white tabular-nums drop-shadow-lg">04:00</div>
+                <div class="flex gap-4">
+                    <button onclick="toggleTimer()" id="btn-timer" class="flex-1 bg-green-500 text-slate-900 p-5 rounded-2xl font-black text-xl shadow-lg">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button onclick="resetTimer()" class="flex-1 bg-slate-700 text-white p-5 rounded-2xl font-black text-xl">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 glass h-20 flex border-t border-white/10 z-50 px-2">
+        <button onclick="switchTab('quimica')" class="btn-tab flex-1 flex flex-col items-center justify-center active">
+            <i class="fas fa-flask text-lg"></i><span class="text-[9px] mt-1 font-bold">ANÁLISIS</span>
+        </button>
+        <div class="flex-1 flex justify-center -mt-8">
+            <button onclick="ejecutarCalculos()" class="bg-green-500 text-slate-900 w-16 h-16 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+                <i class="fas fa-calculator text-2xl"></i>
+            </button>
+        </div>
+        <button onclick="switchTab('carga')" class="btn-tab flex-1 flex flex-col items-center justify-center text-gray-400">
+            <i class="fas fa-truck-loading text-lg"></i><span class="text-[9px] mt-1 font-bold">CARGA</span>
+        </button>
+        <button onclick="switchTab('tiempos')" class="btn-tab flex-1 flex flex-col items-center justify-center text-gray-400">
+            <i class="fas fa-stopwatch text-lg"></i><span class="text-[9px] mt-1 font-bold">TIEMPOS</span>
+        </button>
+    </nav>
+
+    <script>
+        window.onload = () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                splash.style.opacity = '0';
+                setTimeout(() => splash.style.visibility = 'hidden', 1000);
+            }, 2500);
+        };
+
+        const PRODUCTOS = {
+            "S60 RA": {c: [0.44, 0.48], mn: [0.80, 0.90], si: [0.15, 0.25], ce: [0.545, 0.605]},
+            "S60 RB": {c: [0.39, 0.44], mn: [0.80, 0.90], si: [0.18, 0.25], ce: [0.545, 0.605]},
+            "W60 RA": {c: [0.27, 0.29], mn: [1.00, 1.10], si: [0.20, 0.30], ce: [0.480, 0.520]},
+            "W60 RB": {c: [0.25, 0.27], mn: [1.00, 1.05], si: [0.20, 0.30], ce: [0.480, 0.520]}
+        };
+
+        const PRECIOS = {simn: 1.25, femn: 1.55, fesi: 1.80, carbon: 0.70, cal: 0.35};
+        const AREA_CUCHARA = 4.1258;
+        let timerRunning = false, timerSeconds = 240, timerInterval;
+
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function ejecutarCalculos() {
+            const g = document.getElementById('grado').value, ton = parseFloat(document.getElementById('peso').value);
+            const specs = PRODUCTOS[g];
+            const c_act = parseFloat(document.getElementById('c_act').value || 0);
+            const mn_act = parseFloat(document.getElementById('mn_act').value || 0);
+            const si_act = parseFloat(document.getElementById('si_act').value || 0);
+            const cr = parseFloat(document.getElementById('cr_act').value || 0);
+            const ni = parseFloat(document.getElementById('ni_act').value || 0);
+            
+            // 1. Carbono Equivalente
+            const target_c = specs.c[0] + 0.01;
+            const target_mn = specs.mn[0] + 0.01;
+            const ce = target_c + (target_mn / 6) + (cr / 5) + (ni / 15);
+            
+            // 2. Lógica de Aleaciones (Corrección según Test 3)
+            const kg_steel = ton * 1000;
+            const req_mn = Math.max(0, (target_mn - mn_act) / 100 * kg_steel);
+            const req_si = Math.max(0, ((specs.si[0]+0.02) - si_act) / 100 * kg_steel);
+            
+            const simn = Math.min(req_mn / (0.65 * 0.85), req_si / (0.17 * 0.90));
+            const femn = (req_mn - (simn * 0.65 * 0.85)) / (0.75 * 0.85);
+            const fesi = (req_si - (simn * 0.17 * 0.90)) / (0.75 * 0.90);
+            const carbon = Math.max(0, (target_c - c_act) / 100 * kg_steel / (0.98 * 0.85));
+
+            // 3. Escoria y Densidad
+            const feo = parseFloat(document.getElementById('feo_slag').value);
+            const dens = 2.46 + (0.018 * feo); 
+            const kg_cal = ton * 9;
+            const masa_slag = kg_cal / (parseFloat(document.getElementById('cao_slag').value) / 100);
+            const h_slag = (masa_slag / (dens * AREA_CUCHARA * 10)) * 2.5;
+
+            // UI Updates
+            document.getElementById('dash-ce').innerText = ce.toFixed(3);
+            document.getElementById('dash-ce').style.color = (ce > specs.ce[1]) ? '#f87171' : '#4ade80';
+            
+            const costo_total = (simn*PRECIOS.simn) + (femn*PRECIOS.femn) + (fesi*PRECIOS.fesi) + (carbon*PRECIOS.carbon) + (kg_cal*PRECIOS.cal);
+            document.getElementById('dash-cost').innerText = "$" + costo_total.toFixed(0);
+
+            const gain_t = parseFloat(document.getElementById('arco').value) * 3.8;
+            const loss_t = (simn+femn+fesi+kg_cal) / 100 * 1.2;
+            document.getElementById('dash-temp').innerText = (gain_t - loss_t).toFixed(0) + "°C";
+
+            document.getElementById('lista-adiciones').innerHTML = `
+                <div class="glass p-4 rounded-xl border-l-4 border-green-500">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase">Aleaciones Sugeridas</p>
+                    <div class="flex justify-between font-black text-lg mt-2"><span>SiMn</span><span class="text-green-400">${simn.toFixed(0)} kg</span></div>
+                    <div class="flex justify-between font-black text-lg"><span>FeMn</span><span class="text-green-400">${femn.toFixed(0)} kg</span></div>
+                    <div class="flex justify-between font-black text-lg border-t border-white/5 mt-2 pt-2"><span>Carbón</span><span class="text-white">${carbon.toFixed(1)} kg</span></div>
+                    <div class="flex justify-between font-black text-lg"><span>Cal</span><span class="text-white">${kg_cal.toFixed(0)} kg</span></div>
+                </div>
+                <div class="glass p-4 rounded-xl border-l-4 border-orange-500">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase text-orange-400">Estado de Escoria</p>
+                    <div class="flex justify-between text-sm mt-1"><span>Densidad:</span><span>${dens.toFixed(3)} g/cm³</span></div>
+                    <div class="flex justify-between font-black text-xl text-white mt-1"><span>Espesor:</span><span>${h_slag.toFixed(1)} cm</span></div>
+                </div>
+            `;
+
+            const fb = 45 - h_slag;
+            document.getElementById('bar-llenado').style.width = Math.min(100, (h_slag / 45) * 100) + "%";
+            document.getElementById('llenado-text').innerText = `Espacio Libre: ${fb.toFixed(1)} cm`;
+            document.getElementById('alerta-llenado').innerText = fb < 15 ? "¡CRÍTICO!" : "";
+
+            switchTab('carga');
+        }
+
+        function toggleTimer() {
+            if (timerRunning) { clearInterval(timerInterval); document.getElementById('btn-timer').innerHTML = '<i class="fas fa-play"></i>'; }
+            else { timerInterval = setInterval(() => { timerSeconds--; actualizarReloj(); if(timerSeconds<=0) { clearInterval(timerInterval); alert("TIEMPO CUMPLIDO"); } }, 1000); document.getElementById('btn-timer').innerHTML = '<i class="fas fa-pause"></i>'; }
+            timerRunning = !timerRunning;
+        }
+        function resetTimer() { clearInterval(timerInterval); timerSeconds = 240; timerRunning = false; actualizarReloj(); document.getElementById('btn-timer').innerHTML = '<i class="fas fa-play"></i>'; }
+        function actualizarReloj() { document.getElementById('timer').innerText = `${Math.floor(timerSeconds/60)}:${(timerSeconds%60).toString().padStart(2,'0')}`; }
+    </script>
+</body>
+</html>
